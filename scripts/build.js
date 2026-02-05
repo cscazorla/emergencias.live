@@ -109,6 +109,7 @@ function getNav(activePage) {
   return `<nav>
   <a href="/"${activePage === 'index' ? ' class="active"' : ''}>Teléfonos</a>
   <a href="/alertas"${activePage === 'alertas' ? ' class="active"' : ''}>Alertas</a>
+  <a href="/comunidades"${activePage === 'comunidades' ? ' class="active"' : ''}>Comunidades</a>
   <a href="/guias/"${activePage === 'guias' ? ' class="active"' : ''}>Guías</a>
 </nav>`;
 }
@@ -572,6 +573,204 @@ function generateGuiasIndexHtml() {
 
   <main>
     ${guidesHtml}
+  </main>
+
+  ${getFooter()}
+</body>
+</html>`;
+}
+
+// Generate comunidades page
+function generateComunidadesHtml() {
+  const comunidades = [
+    {
+      name: 'Andalucía',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Sanitarias', number: '061', note: '' },
+        { name: 'Salud Responde', number: '955 54 50 60', note: 'Cita previa, información sanitaria' },
+        { name: 'Información Junta', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Aragón',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urgencias Sanitarias', number: '061', note: '' },
+        { name: 'Información Gobierno', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Asturias',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urgencias Sanitarias', number: '061', note: '' },
+        { name: 'Información Principado', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Baleares',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'SAMU 061', number: '061', note: "Servei d'Atenció Mèdica Urgent" },
+        { name: 'IB-Salut', number: '971 21 98 00', note: '' },
+        { name: 'Información Govern', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Canarias',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urgencias Canarias', number: '061', note: '' },
+        { name: 'Información Gobierno', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Cantabria',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Sanitarias', number: '061', note: '' },
+        { name: 'Información Gobierno', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Castilla-La Mancha',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'SESCAM Urgencias', number: '061', note: '' },
+        { name: 'Información Junta', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Castilla y León',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Sanitarias', number: '061', note: '' },
+        { name: 'Información Junta', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Cataluña',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergències Mèdiques (SEM)', number: '061', note: '' },
+        { name: "Mossos d'Esquadra", number: '088', note: 'Policía autonómica' },
+        { name: 'CatSalut', number: '061', note: 'Sanitat Respon' },
+        { name: 'Información Generalitat', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Ceuta',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urgencias INGESA', number: '956 52 82 00', note: '' }
+      ]
+    },
+    {
+      name: 'Comunidad Valenciana',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Sanitarias', number: '061', note: '' },
+        { name: 'Sanitat Respon', number: '900 16 11 61', note: 'Información sanitaria' },
+        { name: 'Información GVA', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Extremadura',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Sanitarias', number: '061', note: '' },
+        { name: 'Información Junta', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Galicia',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urxencias Sanitarias', number: '061', note: '' },
+        { name: 'Saúde en liña', number: '881 54 02 02', note: 'Información sanitaria' },
+        { name: 'Información Xunta', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'La Rioja',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urgencias Sanitarias', number: '061', note: '' },
+        { name: 'Información Gobierno', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Madrid',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'SUMMA 112', number: '061', note: 'Urgencias extrahospitalarias' },
+        { name: 'Salud Madrid', number: '900 102 112', note: 'Cita previa, información' },
+        { name: 'Información Comunidad', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Melilla',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Urgencias INGESA', number: '952 67 00 00', note: '' }
+      ]
+    },
+    {
+      name: 'Murcia',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Sanitarias 061', number: '061', note: '' },
+        { name: 'Información CARM', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'Navarra',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'SOS Navarra', number: '112', note: '' },
+        { name: 'Policía Foral', number: '948 01 20 12', note: 'No urgencias' },
+        { name: 'Osasunbidea', number: '948 29 00 00', note: 'Servicio Navarro de Salud' },
+        { name: 'Información Gobierno', number: '012', note: '' }
+      ]
+    },
+    {
+      name: 'País Vasco',
+      phones: [
+        { name: 'Emergencias', number: '112', note: '' },
+        { name: 'Emergencias Osakidetza', number: '061', note: '' },
+        { name: 'Ertzaintza', number: '112', note: 'Policía autonómica' },
+        { name: 'Ertzaintza (no urgencias)', number: '900 10 35 84', note: '' },
+        { name: 'Información Gobierno', number: '012', note: '' }
+      ]
+    }
+  ];
+
+  const comunidadesHtml = comunidades.map(c => `
+    <section>
+      <h2>${c.name}</h2>
+      ${c.phones.map(p => `
+      <a href="tel:${p.number.replace(/\s/g, '')}" class="emergency">
+        <strong>${p.name}</strong>
+        <span class="phone">${p.number}</span>
+        ${p.note ? `<span class="note">${p.note}</span>` : ''}
+      </a>`).join('')}
+    </section>`).join('');
+
+  return `${getHead('Teléfonos por Comunidad Autónoma - Emergencias en España', 'Teléfonos de emergencia específicos de cada comunidad autónoma: 061, policías autonómicas, información sanitaria y más.', '/comunidades')}
+<body>
+  ${getNav('comunidades')}
+  <header>
+    <h1>Teléfonos por Comunidad</h1>
+    <p class="subtitle">Servicios específicos de cada autonomía</p>
+  </header>
+
+  <main>
+    <div class="warning-box">
+      <strong>112</strong> es el número único de emergencias válido en toda España y Europa. Úsalo siempre en caso de emergencia.
+    </div>
+
+    ${comunidadesHtml}
   </main>
 
   ${getFooter()}
@@ -1192,6 +1391,7 @@ function generateSitemap() {
   const pages = [
     { loc: '/', priority: '1.0', changefreq: 'weekly' },
     { loc: '/alertas', priority: '0.9', changefreq: 'hourly' },
+    { loc: '/comunidades', priority: '0.8', changefreq: 'monthly' },
     { loc: '/guias/', priority: '0.8', changefreq: 'monthly' },
     ...GUIDES.map(g => ({ loc: `/guias/${g.slug}`, priority: '0.7', changefreq: 'monthly' }))
   ];
@@ -1249,6 +1449,10 @@ async function build() {
   fs.writeFileSync(path.join(DIST_DIR, 'alertas.html'), generateAlertasHtml(alerts, earthquakes, trafficIncidents, buildTime));
   console.log('  - alertas.html');
 
+  // Comunidades
+  fs.writeFileSync(path.join(DIST_DIR, 'comunidades.html'), generateComunidadesHtml());
+  console.log('  - comunidades.html');
+
   // Guias index
   fs.writeFileSync(path.join(DIST_DIR, 'guias', 'index.html'), generateGuiasIndexHtml());
   console.log('  - guias/index.html');
@@ -1272,6 +1476,7 @@ async function build() {
   const files = [
     'index.html',
     'alertas.html',
+    'comunidades.html',
     'guias/index.html',
     ...GUIDES.map(g => `guias/${g.slug}.html`)
   ];

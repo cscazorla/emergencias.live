@@ -13,6 +13,11 @@
   status = 200
 
 [[redirects]]
+  from = "/comunidades"
+  to = "/comunidades.html"
+  status = 200
+
+[[redirects]]
   from = "/guias/:slug"
   to = "/guias/:slug.html"
   status = 200
