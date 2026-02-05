@@ -8,6 +8,7 @@ const SRC_DIR = path.join(__dirname, '..', 'src');
 // RSS Feed URLs
 const AEMET_RSS = 'https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAE_wah_RSS.xml';
 const IGN_RSS = 'https://www.ign.es/ign/RssTools/sismologia.xml';
+const DGT_DATEX2 = 'https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml';
 
 // XML Parser configuration
 const parser = new XMLParser({
@@ -54,6 +55,9 @@ li{margin-bottom:.25rem}
 .update-time{font-size:.8rem;color:#666;margin-bottom:1rem}
 .source-link{font-size:.8rem;color:#666}
 .source-link a{color:#dc2626}
+.section-nav{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.section-nav a{padding:.4rem .8rem;background:#f5f5f5;border-radius:.5rem;text-decoration:none;color:#666;font-size:.85rem}
+.section-nav a:hover,.section-nav a:focus{background:#e5e5e5;color:#111}
 footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #e5e5e5;font-size:.8rem;color:#666;text-align:center}
 footer a{color:#666;text-decoration:none}
 footer a:hover{text-decoration:underline}
@@ -91,9 +95,11 @@ nav a.active{background:#dc2626;color:#fff}
 .warning-box strong{color:#f87171}
 footer{border-color:#333}
 footer a,.source-link a{color:#a3a3a3}
+.section-nav a{background:#1f1f1f;color:#a3a3a3}
+.section-nav a:hover,.section-nav a:focus{background:#292929;color:#f5f5f5}
 }
 @media print{
-nav,.back-link{display:none}
+nav,.back-link,.section-nav{display:none}
 body{max-width:100%;font-size:12pt}
 .alert,.seismo,.guide-card,.emergency{break-inside:avoid}
 }`;
@@ -259,6 +265,107 @@ function parseIgnEarthquakes(xml) {
   }
 }
 
+// Parse DGT DATEX2 traffic incidents
+function parseDgtIncidents(xml) {
+  if (!xml) return [];
+
+  try {
+    const data = parser.parse(xml);
+    const situations = data?.['d2:payload']?.['sit:situation'];
+    if (!situations) return [];
+
+    const sitList = Array.isArray(situations) ? situations : [situations];
+    const now = Date.now();
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+
+    const incidents = [];
+
+    for (const sit of sitList) {
+      const severity = sit['sit:overallSeverity'];
+      // Only include high and highest severity incidents
+      if (severity !== 'high' && severity !== 'highest') continue;
+
+      const record = sit['sit:situationRecord'];
+      if (!record) continue;
+
+      // Handle both single record and array of records
+      const records = Array.isArray(record) ? record : [record];
+
+      for (const rec of records) {
+        const creationTime = rec['sit:situationRecordCreationTime'];
+        const recordDate = creationTime ? new Date(creationTime) : null;
+
+        // Skip old incidents (> 7 days)
+        if (recordDate && recordDate.getTime() < sevenDaysAgo) continue;
+
+        // Get cause type
+        const cause = rec['sit:cause'];
+        const causeType = cause?.['sit:causeType'] || 'unknown';
+        const detailedCause = cause?.['sit:detailedCauseType'];
+
+        // Get location info
+        const locationRef = rec['sit:locationReference'];
+        const suppDesc = locationRef?.['loc:supplementaryPositionalDescription'];
+        const roadName = suppDesc?.['loc:roadInformation']?.['loc:roadName'] || '';
+
+        // Get province/municipality from tpeg location
+        const tpegLoc = locationRef?.['loc:tpegLinearLocation'];
+        const fromPoint = tpegLoc?.['loc:from'];
+        const extPoint = fromPoint?.['loc:_tpegNonJunctionPointExtension']?.['loc:extendedTpegNonJunctionPoint'];
+
+        const province = extPoint?.['lse:province'] || '';
+        const municipality = extPoint?.['lse:municipality'] || '';
+        const autonomy = extPoint?.['lse:autonomousCommunity'] || '';
+
+        // Translate cause types to Spanish
+        let causeText = 'Incidencia';
+        if (causeType === 'accident') causeText = 'Accidente';
+        else if (causeType === 'roadMaintenance') causeText = 'Obras';
+        else if (causeType === 'obstruction') causeText = 'Obstrucción';
+        else if (causeType === 'vehicleObstruction') causeText = 'Vehículo en calzada';
+        else if (causeType === 'environmentalObstruction') causeText = 'Obstáculo ambiental';
+        else if (causeType === 'infrastructureDamageObstruction') causeText = 'Daños en infraestructura';
+        else if (causeType === 'poorRoadInfrastructure') causeText = 'Mal estado de vía';
+        else if (causeType === 'abnormalTraffic') causeText = 'Tráfico anormal';
+        else if (causeType === 'poorEnvironment') causeText = 'Condiciones adversas';
+        else if (causeType === 'poorEnvironmentConditions') causeText = 'Condiciones adversas';
+
+        // Get more specific cause if available
+        if (detailedCause) {
+          if (detailedCause['sit:roadMaintenanceType'] === 'roadClosed') causeText = 'Carretera cortada';
+          else if (detailedCause['sit:obstructionType'] === 'shed load') causeText = 'Carga derramada';
+          else if (detailedCause['sit:accidentType']) causeText = 'Accidente';
+        }
+
+        // Build title
+        let title = causeText;
+        if (roadName) title += ` en ${roadName}`;
+        if (municipality && province) title += ` - ${municipality} (${province})`;
+        else if (province) title += ` - ${province}`;
+
+        incidents.push({
+          title,
+          severity: severity === 'highest' ? 'red' : 'orange',
+          province,
+          municipality,
+          road: roadName,
+          causeType,
+          date: recordDate || new Date()
+        });
+      }
+    }
+
+    // Sort by date (most recent first) and limit
+    return incidents
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 15);
+
+  } catch (error) {
+    console.error('Error parsing DGT DATEX2:', error.message);
+    return [];
+  }
+}
+
 // Format relative time
 function formatRelativeTime(date) {
   const now = Date.now();
@@ -277,7 +384,7 @@ function formatRelativeTime(date) {
 }
 
 // Generate alerts.html
-function generateAlertasHtml(alerts, earthquakes, buildTime) {
+function generateAlertasHtml(alerts, earthquakes, trafficIncidents, buildTime) {
   const alertsHtml = alerts.length > 0
     ? alerts.map(alert => `
       <div class="alert alert-${alert.severity}">
@@ -296,6 +403,14 @@ function generateAlertasHtml(alerts, earthquakes, buildTime) {
       </div>`).join('')
     : '<p>No hay terremotos significativos en las últimas 48 horas.</p>';
 
+  const trafficHtml = trafficIncidents.length > 0
+    ? trafficIncidents.map(incident => `
+      <div class="alert alert-${incident.severity}">
+        <div class="alert-title">${escapeHtml(incident.title)}</div>
+        <div class="alert-meta">${formatRelativeTime(incident.date)}</div>
+      </div>`).join('')
+    : '<p>No hay incidencias graves de tráfico en este momento.</p>';
+
   return `${getHead('Alertas - Emergencias en España', 'Alertas meteorológicas y sísmicas en tiempo real para España. Información de AEMET e IGN.', '/alertas')}
 <body>
   ${getNav('alertas')}
@@ -304,17 +419,33 @@ function generateAlertasHtml(alerts, earthquakes, buildTime) {
     <p class="update-time">Última actualización: ${buildTime.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
   </header>
 
+  <nav class="section-nav">
+    <a href="#meteorologia">Meteorología</a>
+    <a href="#sismica">Sísmica</a>
+    <a href="#trafico">Tráfico</a>
+  </nav>
+
   <main>
-    <section>
+    <section id="meteorologia">
       <h2>Alertas Meteorológicas</h2>
       ${alertsHtml}
       <p class="source-link">Fuente: <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">AEMET</a></p>
     </section>
 
-    <section>
+    <section id="sismica">
       <h2>Actividad Sísmica (últimas 48h)</h2>
       ${earthquakesHtml}
       <p class="source-link">Fuente: <a href="https://www.ign.es/web/ign/portal/ultimos-terremotos/-/ultimos-terremotos/get10teleproc" target="_blank" rel="noopener">Instituto Geográfico Nacional</a></p>
+    </section>
+
+    <section id="trafico">
+      <h2>Incidencias de Tráfico (severidad alta)</h2>
+      ${trafficHtml}
+      <a href="https://etraffic.dgt.es/etrafficWEB/" target="_blank" rel="noopener" class="guide-card">
+        <strong>Ver mapa de tráfico completo</strong>
+        <p>Todas las incidencias, obras y retenciones</p>
+      </a>
+      <p class="source-link">Fuente: <a href="https://nap.dgt.es" target="_blank" rel="noopener">DGT - Punto de Acceso Nacional</a></p>
     </section>
   </main>
 
@@ -418,6 +549,7 @@ function generateGuiasIndexHtml() {
     { slug: 'tornados', title: 'Tornados', desc: 'Cómo protegerte de tornados y trombas de agua' },
     { slug: 'inundaciones', title: 'Inundaciones', desc: 'Actuación ante crecidas e inundaciones' },
     { slug: 'incendios', title: 'Incendios', desc: 'Evacuación y seguridad ante incendios' },
+    { slug: 'accidentes-trafico', title: 'Accidentes de tráfico', desc: 'Protocolo PAS y primeros auxilios en carretera' },
     { slug: 'fugas-gas', title: 'Fugas de gas', desc: 'Detectar y actuar ante escapes de gas' },
     { slug: 'apagones', title: 'Apagones', desc: 'Preparación y seguridad durante cortes de luz' },
     { slug: 'golpe-calor', title: 'Golpe de calor', desc: 'Prevenir y tratar el golpe de calor' },
@@ -935,6 +1067,109 @@ const GUIDES = [
       </ul>
     </section>`,
     when112: '<p>Llama si la persona deja de temblar, está confusa, somnolienta o inconsciente, o si sospechas hipotermia severa.</p>'
+  },
+  {
+    slug: 'accidentes-trafico',
+    title: 'Accidentes de tráfico',
+    description: 'Protocolo PAS (Proteger, Avisar, Socorrer) y primeros auxilios en accidentes de carretera.',
+    content: `
+    <section>
+      <h2>Protocolo PAS</h2>
+      <div class="warning-box">
+        <strong>PAS = Proteger, Avisar, Socorrer.</strong> Sigue siempre este orden para no convertirte en otra víctima.
+      </div>
+    </section>
+
+    <section>
+      <h2>1. PROTEGER</h2>
+      <ol>
+        <li>Estaciona tu vehículo en lugar seguro, fuera de la calzada si es posible</li>
+        <li>Enciende las luces de emergencia</li>
+        <li>Ponte el chaleco reflectante ANTES de salir del coche</li>
+        <li>Coloca los triángulos de emergencia:
+          <ul>
+            <li>A 50 metros por delante y por detrás del accidente</li>
+            <li>En autopista/autovía: solo por detrás, a 100 metros</li>
+            <li>Camina siempre por el arcén, de cara al tráfico</li>
+          </ul>
+        </li>
+        <li>Si hay riesgo de incendio o atropello, apaga el motor de los vehículos implicados</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>2. AVISAR</h2>
+      <ol>
+        <li>Llama al <strong>112</strong></li>
+        <li>Indica con claridad:
+          <ul>
+            <li>Ubicación exacta (kilómetro, carretera, dirección)</li>
+            <li>Número de vehículos implicados</li>
+            <li>Número aproximado de heridos</li>
+            <li>Si hay personas atrapadas</li>
+            <li>Si hay riesgo de incendio o mercancías peligrosas</li>
+          </ul>
+        </li>
+        <li>No cuelgues hasta que te lo indiquen</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>3. SOCORRER</h2>
+      <div class="warning-box">
+        <strong>No muevas a los heridos</strong> salvo que haya peligro inminente (fuego, ahogamiento). Mover a alguien con lesión de columna puede causar parálisis.
+      </div>
+      <ol>
+        <li>Comprueba si los heridos están conscientes (háblales, tócales el hombro)</li>
+        <li>Si están conscientes, tranquilízalos y evita que se muevan</li>
+        <li>Si no respiran y sabes RCP, inicia las maniobras</li>
+        <li>Controla hemorragias graves presionando con un paño limpio</li>
+        <li>NO quites el casco a un motorista salvo que no respire</li>
+        <li>Cubre a los heridos para evitar hipotermia</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Lo que NO debes hacer</h2>
+      <ul>
+        <li>Mover a los heridos (salvo peligro inminente)</li>
+        <li>Darles de beber o comer</li>
+        <li>Quitar el casco a un motorista que respira</li>
+        <li>Hacer torniquetes (solo en amputaciones con hemorragia mortal)</li>
+        <li>Dejar solo a un herido grave</li>
+        <li>Circular por la calzada sin chaleco reflectante</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Si estás implicado en el accidente</h2>
+      <ol>
+        <li>Para el vehículo y enciende las luces de emergencia</li>
+        <li>Comprueba si tú y tus acompañantes estáis bien</li>
+        <li>Sal del vehículo por el lado más seguro (arcén)</li>
+        <li>Nunca te des a la fuga, es delito</li>
+        <li>Intercambia datos con el otro conductor:
+          <ul>
+            <li>Nombre y DNI</li>
+            <li>Matrícula y marca del vehículo</li>
+            <li>Compañía de seguros y número de póliza</li>
+          </ul>
+        </li>
+        <li>Haz fotos de los daños y la posición de los vehículos</li>
+        <li>Rellena el parte amistoso si no hay heridos</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Kit obligatorio en el coche</h2>
+      <ul>
+        <li>2 triángulos de emergencia</li>
+        <li>Chaleco reflectante homologado</li>
+        <li>Rueda de repuesto o kit antipinchazos</li>
+        <li>Recomendado: guantes, linterna, manta térmica</li>
+      </ul>
+    </section>`,
+    when112: '<p>Llama siempre que haya un accidente con heridos, personas atrapadas, vehículos que obstaculizan la vía, o cualquier situación de peligro.</p>'
   }
 ];
 
@@ -987,18 +1222,21 @@ async function build() {
   const buildTime = new Date();
 
   // Fetch feeds in parallel
-  console.log('Fetching RSS feeds...');
-  const [aemetXml, ignXml] = await Promise.all([
+  console.log('Fetching data feeds...');
+  const [aemetXml, ignXml, dgtXml] = await Promise.all([
     fetchFeed(AEMET_RSS),
-    fetchFeed(IGN_RSS)
+    fetchFeed(IGN_RSS),
+    fetchFeed(DGT_DATEX2)
   ]);
 
   // Parse feeds
   const alerts = parseAemetAlerts(aemetXml);
   const earthquakes = parseIgnEarthquakes(ignXml);
+  const trafficIncidents = parseDgtIncidents(dgtXml);
 
   console.log(`  - AEMET alerts: ${alerts.length}`);
   console.log(`  - IGN earthquakes: ${earthquakes.length}`);
+  console.log(`  - DGT traffic incidents: ${trafficIncidents.length}`);
 
   // Generate pages
   console.log('\nGenerating pages...');
@@ -1008,7 +1246,7 @@ async function build() {
   console.log('  - index.html');
 
   // Alertas
-  fs.writeFileSync(path.join(DIST_DIR, 'alertas.html'), generateAlertasHtml(alerts, earthquakes, buildTime));
+  fs.writeFileSync(path.join(DIST_DIR, 'alertas.html'), generateAlertasHtml(alerts, earthquakes, trafficIncidents, buildTime));
   console.log('  - alertas.html');
 
   // Guias index
