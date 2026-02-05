@@ -1,10 +1,44 @@
 [build]
-  publish = "."
+  command = "npm run build"
+  publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Clean URLs (remove .html extension)
+[[redirects]]
+  from = "/alertas"
+  to = "/alertas.html"
+  status = 200
+
+[[redirects]]
+  from = "/guias/:slug"
+  to = "/guias/:slug.html"
+  status = 200
+
+# Headers for all pages
 [[headers]]
   for = "/*"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Short cache for alerts (updated every 15 min)
+[[headers]]
+  for = "/alertas.html"
+  [headers.values]
+    Cache-Control = "public, max-age=900"
+
+# Longer cache for static guides
+[[headers]]
+  for = "/guias/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# Standard cache for index
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
