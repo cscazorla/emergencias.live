@@ -1,13 +1,13 @@
 # emergencias.live
 
-Emergency phone numbers, real-time alerts, and emergency guides for Spain. Ultra-lightweight static site, no client-side JavaScript.
+Official repository for [emergencias.live](https://emergencias.live) — emergency phone numbers, real-time alerts, and emergency guides for Spain. Ultra-lightweight static site, no client-side JavaScript.
 
 ## Features
 
 - **Ultra-lightweight**: ~90 KB total, ~7 KB per page
 - **No JavaScript**: Works on any browser or device
-- **Real-time alerts**: Weather alerts (AEMET) and earthquakes (IGN)
-- **Emergency guides**: Step-by-step instructions for 8 emergency types
+- **Real-time alerts**: Weather alerts (AEMET), earthquakes (IGN), and traffic incidents (DGT)
+- **Emergency guides**: Step-by-step instructions for 9 emergency types
 - **Dark mode**: Automatic based on system preferences
 - **Direct calling**: `tel:` links for one-tap calling
 - **Accessible**: Semantic HTML, large touch targets
@@ -18,12 +18,14 @@ Emergency phone numbers, real-time alerts, and emergency guides for Spain. Ultra
 | Page | Description |
 |------|-------------|
 | `/` | Emergency phone numbers |
-| `/alertas` | Weather alerts + recent earthquakes |
+| `/alertas` | Weather alerts + earthquakes + traffic incidents |
+| `/comunidades` | Emergency phone numbers by autonomous community |
 | `/guias/` | Emergency guides index |
 | `/guias/terremotos` | Earthquake guide |
 | `/guias/tornados` | Tornado guide |
 | `/guias/inundaciones` | Flood guide |
 | `/guias/incendios` | Fire guide |
+| `/guias/accidentes-trafico` | Traffic accident guide |
 | `/guias/fugas-gas` | Gas leak guide |
 | `/guias/apagones` | Power outage guide |
 | `/guias/golpe-calor` | Heat stroke guide |
@@ -47,8 +49,9 @@ Emergency phone numbers, real-time alerts, and emergency guides for Spain. Ultra
 
 | Source | Data | Update frequency |
 |--------|------|------------------|
-| [AEMET](https://www.aemet.es) | Weather alerts | Every 15 min |
-| [IGN](https://www.ign.es) | Earthquakes (M ≥ 2.0, last 48h) | Every 15 min |
+| [AEMET](https://www.aemet.es) | Weather alerts | Every 30 min |
+| [IGN](https://www.ign.es) | Earthquakes (M ≥ 2.0, last 48h) | Every 30 min |
+| [DGT](https://nap.dgt.es) | Traffic incidents (high severity) | Every 30 min |
 
 ## Development
 
@@ -78,16 +81,16 @@ emergencias.live/
 ├── dist/                  # Generated output (git-ignored)
 ├── scripts/
 │   └── build.js           # Static site generator
-├── netlify/
-│   └── functions/
-│       └── scheduled-build.js  # 15-min rebuild trigger
+├── .github/
+│   └── workflows/
+│       └── scheduled-build.yml  # 30-min rebuild via GitHub Actions
 ├── netlify.toml           # Netlify configuration
 └── package.json
 ```
 
 ## Deployment
 
-The site is deployed on [Netlify](https://www.netlify.com). Alerts are kept fresh via a scheduled function that triggers a rebuild every 15 minutes using a build hook.
+The site is deployed on [Netlify](https://www.netlify.com). Alerts are kept fresh via a GitHub Actions cron job that builds the site and deploys it every 30 minutes using `netlify-cli`.
 
 ## License
 
