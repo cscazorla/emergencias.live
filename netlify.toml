@@ -2,10 +2,6 @@
   command = "npm run build"
   publish = "dist"
 
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-
 # Clean URLs (remove .html extension)
 [[redirects]]
   from = "/alertas"
@@ -30,11 +26,11 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Short cache for alerts (updated every 15 min)
+# Short cache for alerts (updated every 30 min)
 [[headers]]
   for = "/alertas.html"
   [headers.values]
-    Cache-Control = "public, max-age=900"
+    Cache-Control = "public, max-age=1800"
 
 # Longer cache for static guides
 [[headers]]
