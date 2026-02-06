@@ -49,9 +49,9 @@ Official repository for [emergencias.live](https://emergencias.live) — emergen
 
 | Source | Data | Update frequency |
 |--------|------|------------------|
-| [AEMET](https://www.aemet.es) | Weather alerts | Every hour |
-| [IGN](https://www.ign.es) | Earthquakes (M ≥ 2.0, last 48h) | Every hour |
-| [DGT](https://nap.dgt.es) | Traffic incidents (high severity) | Every hour |
+| [AEMET](https://www.aemet.es) | Weather alerts | Every 2 hours |
+| [IGN](https://www.ign.es) | Earthquakes (M ≥ 2.0, last 48h) | Every 2 hours |
+| [DGT](https://nap.dgt.es) | Traffic incidents (high severity) | Every 2 hours |
 
 ## Development
 
@@ -83,14 +83,14 @@ emergencias.live/
 │   └── build.js           # Static site generator
 ├── .github/
 │   └── workflows/
-│       └── scheduled-build.yml  # Hourly rebuild via GitHub Actions
+│       └── scheduled-build.yml  # 2-hourly rebuild via GitHub Actions
 ├── netlify.toml           # Netlify configuration
 └── package.json
 ```
 
 ## Deployment
 
-The site is deployed on [Netlify](https://www.netlify.com). Alerts are kept fresh via a GitHub Actions cron job that builds the site and deploys it every hour using `netlify-cli`.
+The site is deployed on [Netlify](https://www.netlify.com). Alerts are kept fresh via a GitHub Actions cron job that builds the site and deploys it every 2 hours using `netlify-cli`.
 
 ## License
 

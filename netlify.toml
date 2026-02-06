@@ -26,11 +26,11 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Short cache for alerts (updated every hour)
+# Short cache for alerts (updated every 2 hours)
 [[headers]]
   for = "/alertas.html"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, max-age=7200"
 
 # Longer cache for static guides
 [[headers]]
