@@ -84,13 +84,12 @@ emergencias.live/
 ├── .github/
 │   └── workflows/
 │       └── scheduled-build.yml  # 2-hourly rebuild via GitHub Actions
-├── netlify.toml           # Netlify configuration
 └── package.json
 ```
 
 ## Deployment
 
-The site is deployed on [Netlify](https://www.netlify.com). Alerts are kept fresh via a GitHub Actions cron job that builds the site and deploys it every 2 hours using `netlify-cli`.
+The site is deployed on [Cloudflare Pages](https://pages.cloudflare.com). Alerts are kept fresh via a GitHub Actions cron job that builds the site and deploys it every 2 hours using `wrangler`. Security and cache headers are generated at build time via a `_headers` file.
 
 ## License
 
