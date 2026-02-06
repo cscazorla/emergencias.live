@@ -1385,6 +1385,31 @@ function copyStaticFiles() {
   }
 }
 
+// Generate Cloudflare Pages _headers file
+function generateHeadersFile() {
+  const headers = `/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/alertas
+  Cache-Control: public, max-age=7200
+
+/alertas.html
+  Cache-Control: public, max-age=7200
+
+/guias/*
+  Cache-Control: public, max-age=86400
+
+/
+  Cache-Control: public, max-age=3600
+
+/index.html
+  Cache-Control: public, max-age=3600
+`;
+  fs.writeFileSync(path.join(DIST_DIR, '_headers'), headers);
+}
+
 // Generate sitemap
 function generateSitemap() {
   const baseUrl = 'https://emergencias.live';
@@ -1470,6 +1495,10 @@ async function build() {
   // Copy static files
   copyStaticFiles();
   console.log('  - robots.txt');
+
+  // Generate Cloudflare Pages headers
+  generateHeadersFile();
+  console.log('  - _headers');
 
   // Calculate sizes
   console.log('\nFile sizes:');
