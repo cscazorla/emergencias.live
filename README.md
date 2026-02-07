@@ -4,7 +4,7 @@ Official repository for [emergencias.live](https://emergencias.live) — emergen
 
 ## Features
 
-- **Ultra-lightweight**: ~90 KB total, ~7 KB per page
+- **Ultra-lightweight**: ~126 KB total, ~7 KB per page
 - **No JavaScript**: Works on any browser or device
 - **Real-time alerts**: Weather alerts (AEMET), earthquakes (IGN), and traffic incidents (DGT)
 - **Emergency guides**: Step-by-step instructions for 9 emergency types
@@ -89,7 +89,7 @@ emergencias.live/
 
 ## Deployment
 
-The site is deployed on [Cloudflare Pages](https://pages.cloudflare.com). Alerts are kept fresh via a GitHub Actions cron job that builds the site and deploys it every 2 hours using `wrangler`. Security and cache headers are generated at build time via a `_headers` file.
+The site is deployed on [Cloudflare Pages](https://pages.cloudflare.com). A GitHub Actions workflow builds and deploys the site on every push to `main` and every 2 hours via cron using `wrangler`. Security and cache headers are generated at build time via a `_headers` file.
 
 ## License
 
