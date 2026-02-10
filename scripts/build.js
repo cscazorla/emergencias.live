@@ -128,6 +128,7 @@ function getHead(title, description, path = '/') {
   <meta property="og:description" content="${description}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://emergencias.live${path}">
+  <meta name="twitter:card" content="summary">
   <link rel="canonical" href="https://emergencias.live${path}">
   <style>${SHARED_CSS}</style>
 </head>`;
