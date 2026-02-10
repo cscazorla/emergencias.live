@@ -539,6 +539,120 @@ function generateIndexHtml() {
     </section>
   </main>
 
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Teléfonos de emergencia en España",
+    "description": "Todos los teléfonos de emergencia de España: 112, policía, bomberos, ambulancia, violencia de género, toxicología y más.",
+    "url": "https://emergencias.live",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Emergencias generales",
+            "telephone": "112",
+            "description": "Policía, bomberos, ambulancia - Disponible 24h",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Policía Nacional",
+            "telephone": "091",
+            "description": "Zonas urbanas",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Guardia Civil",
+            "telephone": "062",
+            "description": "Zonas rurales",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Bomberos",
+            "telephone": "080",
+            "description": "Incendios, rescates",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Salvamento Marítimo",
+            "telephone": "900 202 202",
+            "description": "Emergencias en el mar",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Información Toxicológica",
+            "telephone": "91 562 04 20",
+            "description": "Intoxicaciones y envenenamientos",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Violencia de género",
+            "telephone": "016",
+            "description": "No deja rastro en la factura telefónica",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "ANAR - Ayuda a menores",
+            "telephone": "116 111",
+            "description": "Atención a niños y adolescentes",
+            "areaServed": "ES"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "EmergencyService",
+            "name": "Teléfono de la Esperanza",
+            "telephone": "717 003 717",
+            "description": "Crisis emocional y prevención del suicidio",
+            "areaServed": "ES"
+          }
+        }
+      ]
+    }
+  }
+  </script>
+
   ${getFooter()}
 </body>
 </html>`;
